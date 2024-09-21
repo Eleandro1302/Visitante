@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Visitantes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: url('https://i.postimg.cc/FF6GCm27/IMG-0108.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: flex-start; /* Alinha o container à esquerda */
+            align-items: flex-start; /* Alinha o container no topo */
+            height: 100vh;
+            margin: 0;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            margin: 20px; /* Adiciona um pouco de espaço ao redor do container */
+        }
+        h1 {
+            color: #fff;
+        }
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            color: #fff;
+        }
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .consent {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .consent input {
+            margin-right: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bem-vindo a AD NewLife</h1>
+        <form id="visitorForm">
+            <label for="name">Nome:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="phone">Telefone:</label>
+            <input type="tel" id="phone" name="phone" required>
+            <div class="consent">
+                <input type="checkbox" id="consent" name="consent" required>
+                <label for="consent">Eu aceito ser contatado.</label>
+            </div>
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <script>
+        // Detectar o idioma do navegador e definir o atributo lang do elemento html
+        document.documentElement.lang = navigator.language || navigator.userLanguage;
+
+        // Inicializar intl-tel-input
+        const phoneInputField = document.querySelector("#phone");
+        const phoneInput = window.intlTelInput(phoneInputField, {
+            initialCountry: "auto",
+            geoIpLookup: function(callback) {
+                fetch('https://ipinfo.io/json?token=<YOUR_TOKEN>')
+                    .then(response => response.json())
+                    .then(data => callback(data.country))
+                    .catch(() => callback('us'));
+            },
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js"
+        });
+
+        document.getElementById('visitorForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const phone = phoneInput.getNumber();
+            const consent = document.getElementById('consent').checked;
+
+            if (!consent) {
+                alert('Você deve aceitar ser contatado para enviar o formulário.');
+                return;
+            }
+
+            const vCard = `
+BEGIN:VCARD
+VERSION:3.0
+FN:${name}
+TEL:${phone}
+END:VCARD
+            `.trim();
+
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=<YOUR_PHONE_NUMBER>&text=${encodeURIComponent(vCard)}`;
+
+            window.open(whatsappUrl, '_blank');
+        });
+    </script>
+</body>
+</html>
